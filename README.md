@@ -1,5 +1,5 @@
 # 📈 Algorithmic Trading System
-##(under development)
+## (under development)
 
 A comprehensive Python-based algorithmic trading system with data ingestion, backtesting, machine learning predictions, and automated reporting.
 
