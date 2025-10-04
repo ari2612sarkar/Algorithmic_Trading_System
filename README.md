@@ -26,7 +26,6 @@ A comprehensive Python-based algorithmic trading system with data ingestion, bac
 - Python 3.8+
 - Active internet connection
 - Google Cloud Service Account (for Sheets integration)
-- Telegram Bot Token (optional, for alerts)
 
 ## 🚀 Quick Start
 
@@ -61,10 +60,6 @@ config = {
     'google_credentials': 'credentials.json',
     'sheet_name': 'Trading_System',
     
-    # Telegram
-    'telegram_enabled': True,
-    'telegram_bot_token': 'YOUR_BOT_TOKEN',
-    'telegram_chat_id': 'YOUR_CHAT_ID'
 }
 ```
 
@@ -166,18 +161,11 @@ Machine learning results:
 - F1-Score
 - Next Day Prediction
 
-## 🔔 Telegram Notifications
-
-Receives alerts for:
-- **Trade Signals**: Buy/Sell with price and RSI
-- **Errors**: System failures or data issues
-- **Daily Summary**: End-of-day performance
-
 ## 📁 Project Structure
 
 ```
 algo-trading-system/
-│
+│── demo_run.py        # Main system file
 ├── trading_system.py        # Main system file
 ├── requirements.txt         # Dependencies
 ├── credentials.json         # Google service account (not in repo)
@@ -217,12 +205,8 @@ algo-trading-system/
 - Logs trades, performance, ML results
 - Creates/updates worksheets
 
-### 7. TelegramNotifier
-- Sends real-time alerts
-- Reports errors
-- Delivers trade signals
 
-### 8. AutomatedTradingSystem
+### 7. AutomatedTradingSystem
 - Orchestrates all modules
 - Runs analysis for multiple symbols
 - Handles errors gracefully
@@ -324,10 +308,6 @@ INFY:
 - Check service account has edit access
 - Ensure sheet name matches config
 
-### Telegram Not Working
-- Verify bot token is correct
-- Check chat ID is valid
-- Test bot with /start command
 
 ## 📝 Logging
 
@@ -362,10 +342,6 @@ Contributions welcome! Please:
 1. Fork the repository
 2. Create a feature branch
 3. Submit a pull request
-
-## ⚠️ Disclaimer
-
-This is for educational purposes only. Not financial advice. Trading involves risk. Always do your own research and consult with financial advisors before making investment decisions.
 
 ---
 
