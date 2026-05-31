@@ -1,18 +1,50 @@
 # 📈 Algorithmic Trading System
-## (under development)
 
-A comprehensive Python-based algorithmic trading system with data ingestion, backtesting, machine learning predictions, and automated reporting.
+![CI](https://github.com/ari2612sarkar/Algorithmic_Trading_System/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B)
+![Docker](https://img.shields.io/badge/deploy-Docker-2496ED)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+An end-to-end algorithmic trading research platform for NSE equities. It ingests
+historical OHLCV data, engineers technical features, trains a deep-learning +
+gradient-boosting ensemble to forecast price direction, backtests an RSI/SMA
+strategy under realistic risk controls, and serves it all through an interactive
+web dashboard — deployable anywhere with a single Docker command.
+
+**Tech stack:** Python · PyTorch (LSTM) · LightGBM · pandas · Plotly · Streamlit ·
+APScheduler · Docker.
+
+**Pipeline:** `collect → engineer features → train (LSTM + LightGBM) → predict /
+forecast → risk-aware backtest → schedule & monitor`.
+
+> ⚠️ For research and educational use only. This is **not** financial advice and
+> places no live broker orders.
+
+## 🖥️ Dashboard
+
+The Streamlit dashboard (`app.py`) gives an interactive view of the whole
+pipeline — candlestick + SMA + volume + RSI charts, one-click train/predict/
+backtest, a probability gauge, a strategy-vs-buy-&-hold equity curve, a live
+scheduler monitor, and a CSV report browser.
+
+```bash
+streamlit run app.py          # → http://localhost:8501
+```
+
+<!-- Add a screenshot at docs/dashboard.png and uncomment:
+![Dashboard](docs/dashboard.png)
+-->
 
 ## 🌟 Features
 
 ### Core Features (100% Implementation)
-1. **Data Ingestion** - NSE data via nsepython for NIFTY 50 stocks
+1. **Data Ingestion** - NSE data via nselib with yfinance fallback for NIFTY 50 stocks
 2. **Trading Strategy** - RSI + Moving Average crossover strategy
-3. **Backtesting** - 6-month historical backtesting with detailed metrics
-4. **ML Predictions** - Decision Tree & Logistic Regression models
-5. **Google Sheets Automation** - Automated logging to separate tabs
-6. **Telegram Alerts** - Real-time notifications for signals and errors
-7. **Full Automation** - One-click execution for all symbols
+3. **Backtesting** - Risk-aware historical backtesting with detailed metrics
+4. **ML Predictions** - LSTM (deep learning) + LightGBM (gradient boosting) models
+5. **CSV Reporting** - Automated logging of trades, performance, and predictions to `reports/`
+6. **Full Automation** - Scheduled multi-interval execution for all symbols
 
 ### Technical Indicators
 - RSI (Relative Strength Index)
@@ -25,7 +57,6 @@ A comprehensive Python-based algorithmic trading system with data ingestion, bac
 
 - Python 3.8+
 - Active internet connection
-- Google Cloud Service Account (for Sheets integration)
 
 ## 🚀 Quick Start
 
@@ -46,45 +77,76 @@ pip install -r requirements.txt
 
 ### 2. Configuration
 
-Edit the `config` dictionary in `main()` function:
+Edit `src/config.py` to adjust the universe and strategy/model parameters:
 
 ```python
-config = {
-    'symbols': ['RELIANCE', 'TCS', 'INFY'],  # Add more NIFTY 50 stocks
-    'rsi_threshold': 30,
-    'initial_capital': 100000,
-    'ml_model': 'decision_tree',  # or 'logistic_regression'
-    
-    # Google Sheets
-    'google_sheets_enabled': True,
-    'google_credentials': 'credentials.json',
-    'sheet_name': 'Trading_System',
-    
-}
+TICKERS = ["RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK"]  # NIFTY 50 stocks
+RSI_WINDOW = 14
+SMA_FAST = 20
+SMA_SLOW = 50
 ```
 
-### 3. Google Sheets Setup
+### 3. Run the System
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project
-3. Enable Google Sheets API
-4. Create Service Account credentials
-5. Download JSON credentials as `credentials.json`
-6. Share your Google Sheet with the service account email
-7. Create a sheet named "Trading_System"
-
-### 4. Telegram Setup (Optional)
-
-1. Create a bot via [@BotFather](https://t.me/botfather)
-2. Get your bot token
-3. Get your chat ID from [@userinfobot](https://t.me/userinfobot)
-4. Add credentials to config
-
-### 5. Run the System
+The entry point is the `src.run` CLI module:
 
 ```bash
-python trading_system.py
+# Collect + cache OHLCV (daily)
+python -m src.run --collect
+
+# Train models, then generate next-bar predictions
+python -m src.run --train
+python -m src.run --predict
+
+# Risk-aware backtest
+python -m src.run --backtest
+
+# Run everything across both intervals (1d + 1h)
+python -m src.run --all
 ```
+
+All output is written as timestamped CSV files to the `reports/` directory.
+
+### 4. Interactive Dashboard (Web UI)
+
+An interactive [Streamlit](https://streamlit.io/) dashboard wraps the whole
+pipeline — pick a ticker/interval and collect data, train, predict, forecast,
+and backtest with live charts:
+
+```bash
+streamlit run app.py
+```
+
+Then open http://localhost:8501. Features:
+- Candlestick chart with SMA overlay, buy-signal markers, and an RSI panel
+- One-click **Collect / Train / Predict / Forecast / Backtest** from the sidebar
+- Prediction card (UP/DOWN + confidence) and N-bar forecast path
+- Risk-aware backtest metrics, equity curve, and trade log
+- Browser for the timestamped CSV reports (with download)
+
+## 🐳 Deployment (Docker)
+
+The repo ships a `Dockerfile` and `docker-compose.yml`. CPU-only PyTorch is
+installed in the image, so it runs on any host without a GPU.
+
+```bash
+# Build and start the dashboard (http://localhost:8501)
+docker compose up --build
+
+# Run in the background
+docker compose up -d
+
+# Also run the live scheduler daemon (hourly/daily predict + weekly retrain)
+docker compose --profile live up -d scheduler
+```
+
+`data/`, `models/`, and `reports/` are mounted as volumes, so fetched data,
+trained models, and reports persist across container restarts. The timezone
+defaults to `Asia/Kolkata` (NSE hours) and can be changed in `docker-compose.yml`.
+
+Because it's a standard container, you can deploy the same image to any
+Docker-capable host (a VPS, or PaaS like Render / Railway / Fly.io) — point the
+platform at this repo or push the built `algo-trading-dashboard` image.
 
 ## 📊 Trading Strategy
 
@@ -98,21 +160,32 @@ python trading_system.py
 
 ## 🤖 Machine Learning Models
 
-### Features Used
+### Features Used (`src/features.py`)
+- Returns (1-bar, 5-bar, 20-bar)
 - RSI (14-period)
-- MACD and MACD Signal
-- Volume Ratio
-- Price Returns
-- Moving Averages (20 & 50-day)
+- SMA 20 & SMA 50
+- MACD, MACD signal, MACD histogram
+- Volume change & high–low range
+- ATR and return-over-ATR
+
+### Labels
+Targets are **triple-barrier** labels (take-profit / stop-loss / timeout) computed
+from ATR-scaled barriers — a higher signal-to-noise target than naive next-bar
+direction. Label = 1 if the TP barrier is hit before the SL barrier.
 
 ### Models
-1. **Decision Tree Classifier**
-   - Max depth: 5
-   - Predicts next-day price movement
+1. **LSTM Classifier** (PyTorch, `src/predictor.py`)
+   - 2-layer LSTM (hidden=64) with dropout, sigmoid head
+   - Trained on scaled, windowed sequences (`SEQ_LEN` per interval)
+   - Class-imbalance-weighted loss; runs on GPU if available, else CPU
 
-2. **Logistic Regression**
-   - L2 regularization
-   - Binary classification (Up/Down)
+2. **LightGBM Classifier** (`src/gbm.py`)
+   - Gradient-boosted trees on the same feature set
+   - Trained per ticker as an ensemble companion to the LSTM
+
+Predictions are the **average of the LSTM and LightGBM probabilities** (the LSTM
+alone is used if LightGBM is unavailable). Persisted per ticker/interval under
+`models/` and evaluated via a rolling **walk-forward** split.
 
 ### Performance Metrics
 - Accuracy
@@ -129,48 +202,47 @@ The system calculates:
 - **Max Drawdown**: Largest peak-to-trough decline
 - **Number of Trades**: Total buy/sell signals
 
-## 📑 Google Sheets Structure
+## 📑 CSV Report Structure
 
-### Tab 1: Trades
-Logs all trade signals with:
-- Date
-- Symbol
-- Trade Type (BUY/SELL)
-- Price
-- RSI
-- Signal strength
+All reports are written to `reports/` as timestamped CSV files:
 
-### Tab 2: Performance
-Tracks portfolio metrics:
-- Symbol
-- Initial Capital
-- Final Value
-- Return %
-- Number of Trades
-- Win Ratio
-- Sharpe Ratio
-- Max Drawdown
+### `trades_*.csv` / `backtest_*.csv`
+Trade signals and backtest results: ticker, interval, total return, win rate, Sharpe, max drawdown, number of trades.
 
-### Tab 3: ML_Predictions
-Machine learning results:
-- Symbol
-- Model Type
-- Accuracy
-- Precision
-- Recall
-- F1-Score
-- Next Day Prediction
+### `predictions_*.csv`
+Next-bar model predictions per symbol.
+
+### `training_*.csv`
+Model training metrics per symbol.
 
 ## 📁 Project Structure
 
 ```
 algo-trading-system/
-│── demo_run.py        # Main system file
-├── trading_system.py        # Main system file
+├── app.py                   # Streamlit interactive dashboard
+├── Dockerfile               # Container image (CPU-only PyTorch)
+├── docker-compose.yml       # Dashboard + optional live scheduler
+├── .streamlit/config.toml   # Dashboard theme
+├── .github/workflows/ci.yml # Lint + compile + import CI
+├── LICENSE                  # MIT
+├── src/
+│   ├── run.py               # CLI entry point
+│   ├── config.py            # Universe + parameters
+│   ├── data_collector.py    # OHLCV ingestion (nselib + yfinance)
+│   ├── strategy.py          # RSI + MA crossover signals
+│   ├── backtest.py          # Backtesting engine
+│   ├── risk.py              # Risk-aware backtest (ATR stops + Kelly)
+│   ├── predictor.py         # Train / predict / forecast orchestration
+│   ├── dl_model.py          # LSTM deep-learning model
+│   ├── gbm.py               # LightGBM model
+│   └── scheduler.py         # APScheduler live daemon
+├── data/                    # Cached OHLCV CSVs (git-ignored)
+├── models/                  # Trained model artifacts (git-ignored)
+├── reports/                 # Timestamped output CSVs (git-ignored)
+├── logs/                    # system.log for the Live tab (git-ignored)
+├── Demo/                    # Standalone Colab demo notebook
 ├── requirements.txt         # Dependencies
-├── credentials.json         # Google service account (not in repo)
-├── trading_system.log       # System logs
-└── README.md               # Documentation
+└── README.md                # Documentation
 ```
 
 ## 🧩 Module Breakdown
@@ -200,11 +272,9 @@ algo-trading-system/
 - Trains classification models
 - Predicts next-day movements
 
-### 6. GoogleSheetsManager
-- Connects to Google Sheets API
-- Logs trades, performance, ML results
-- Creates/updates worksheets
-
+### 6. ReportWriter
+- Writes trades, performance, and ML results to CSV
+- Timestamps each report under `reports/`
 
 ### 7. AutomatedTradingSystem
 - Orchestrates all modules
@@ -214,7 +284,7 @@ algo-trading-system/
 ## 🎯 Evaluation Criteria (20% each)
 
 ### ✅ API Handling (20%)
-- ✓ nsepython integration
+- ✓ nselib integration with yfinance fallback
 - ✓ Error handling & retry logic
 - ✓ Rate limiting
 - ✓ Data validation
@@ -232,10 +302,10 @@ algo-trading-system/
 - ✓ Error recovery
 
 ### ✅ ML Implementation (20%)
-- ✓ Decision Tree model
-- ✓ Logistic Regression model
-- ✓ Feature engineering
-- ✓ Accuracy reporting
+- ✓ LSTM deep-learning model
+- ✓ LightGBM gradient-boosting model (ensembled)
+- ✓ Feature engineering + triple-barrier labels
+- ✓ Accuracy reporting + walk-forward validation
 
 ### ✅ Code Quality (20%)
 - ✓ Modular design
@@ -245,23 +315,28 @@ algo-trading-system/
 
 ## 🔧 Advanced Usage
 
+All settings live in `src/config.py`.
+
 ### Running for Different Stocks
 
 ```python
-config['symbols'] = ['HDFCBANK', 'ICICIBANK', 'SBIN', 'KOTAKBANK', 'AXISBANK']
+TICKERS = ['HDFCBANK', 'ICICIBANK', 'SBIN', 'KOTAKBANK', 'AXISBANK']
 ```
 
 ### Changing Strategy Parameters
 
 ```python
-config['rsi_threshold'] = 25  # More aggressive
-config['initial_capital'] = 500000  # Larger portfolio
+RSI_WINDOW = 14
+SMA_FAST = 20
+SMA_SLOW = 50
 ```
 
-### Using Different ML Models
+### Tuning the Models
 
 ```python
-config['ml_model'] = 'logistic_regression'
+EPOCHS = 40          # LSTM training epochs
+SEQ_LEN = {"1d": 10, "1h": 40}    # sequence window per interval
+TB_HORIZON = {"1d": 10, "1h": 30} # triple-barrier look-forward
 ```
 
 ## 📊 Sample Output
@@ -300,13 +375,8 @@ INFY:
 
 ### NSE API Issues
 - Check internet connection
-- Verify nsepython is latest version
-- System uses sample data if API fails
-
-### Google Sheets Errors
-- Verify credentials.json exists
-- Check service account has edit access
-- Ensure sheet name matches config
+- Verify nselib is latest version
+- System automatically falls back to yfinance if nselib fails
 
 
 ## 📝 Logging
