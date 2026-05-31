@@ -281,38 +281,6 @@ algo-trading-system/
 - Runs analysis for multiple symbols
 - Handles errors gracefully
 
-## 🎯 Evaluation Criteria (20% each)
-
-### ✅ API Handling (20%)
-- ✓ nselib integration with yfinance fallback
-- ✓ Error handling & retry logic
-- ✓ Rate limiting
-- ✓ Data validation
-
-### ✅ Strategy Logic (20%)
-- ✓ RSI-based signals
-- ✓ MA crossover confirmation
-- ✓ Position tracking
-- ✓ Signal generation
-
-### ✅ Automation (20%)
-- ✓ Single-function execution
-- ✓ Multi-symbol processing
-- ✓ Scheduled capability
-- ✓ Error recovery
-
-### ✅ ML Implementation (20%)
-- ✓ LSTM deep-learning model
-- ✓ LightGBM gradient-boosting model (ensembled)
-- ✓ Feature engineering + triple-barrier labels
-- ✓ Accuracy reporting + walk-forward validation
-
-### ✅ Code Quality (20%)
-- ✓ Modular design
-- ✓ Comprehensive logging
-- ✓ Documentation
-- ✓ Error handling
-
 ## 🔧 Advanced Usage
 
 All settings live in `src/config.py`.
