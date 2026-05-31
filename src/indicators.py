@@ -22,3 +22,9 @@ def macd(close: pd.Series, fast=12, slow=26, signal=9):
     sig = line.ewm(span=signal, adjust=False).mean()
     hist = line - sig
     return line, sig, hist
+
+def atr(high: pd.Series, low: pd.Series, close: pd.Series, n: int = 14) -> pd.Series:
+    """Average True Range — volatility measure used for stops & barrier sizing."""
+    prev = close.shift(1)
+    tr = pd.concat([(high - low), (high - prev).abs(), (low - prev).abs()], axis=1).max(axis=1)
+    return tr.ewm(alpha=1/n, adjust=False).mean()
