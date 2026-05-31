@@ -1,0 +1,37 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# ---- Virtual envs ----
+venv/
+.venv/
+env/
+ENV/
+
+# ---- Generated artifacts (kept empty in repo via .gitkeep) ----
+data/*
+!data/.gitkeep
+models/*
+!models/.gitkeep
+reports/*
+!reports/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# ---- Streamlit secrets ----
+.streamlit/secrets.toml
+
+# ---- Editors / OS ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Misc ----
+*.log
+.ipynb_checkpoints/
