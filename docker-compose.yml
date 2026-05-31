@@ -1,0 +1,31 @@
+services:
+  dashboard:
+    build: .
+    image: algo-trading-dashboard
+    container_name: algo-trading-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      # Persist fetched data, trained models, and CSV reports across restarts.
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+    environment:
+      - TZ=Asia/Kolkata
+    restart: unless-stopped
+
+  # Optional: the live scheduler daemon (hourly/daily predict + weekly retrain).
+  # Start with:  docker compose --profile live up scheduler
+  scheduler:
+    build: .
+    image: algo-trading-dashboard
+    container_name: algo-trading-scheduler
+    command: ["python", "-m", "src.run", "--schedule"]
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+    environment:
+      - TZ=Asia/Kolkata
+    restart: unless-stopped
+    profiles: ["live"]
